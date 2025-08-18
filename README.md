@@ -22,7 +22,7 @@ Esse fluxo simula o funcionamento de um comando `ping` tradicional permitindo te
 ```
 mqtt-pingpong/
 ├─ docker-compose.yml # Orquestra os containers (broker Mosquitto + app Python)
-├─ .env # Variáveis de ambiente (opcional, apenas MQTT_USER)
+├─ .env # Variáveis de ambiente
 ├─ mosquitto/
 │ ├─ mosquitto.conf # Configuração do broker Mosquitto
 │ └─ passwd # Arquivo gerado com hash bcrypt do usuário MQTT
@@ -70,10 +70,10 @@ O Mosquitto utiliza o arquivo passwd com hash bcrypt, garantindo que o broker va
 
 ## Próximos Passos
 
-[ ] A senha do usuário MQTT é armazenada em texto plano no .env e precisará ser utilizado outro método.
+- [ ] A senha do usuário MQTT é armazenada em texto plano no .env e precisará ser utilizado outro método.
 
-[ ] Adicionar autenticação TLS para o broker Mosquitto.
+- [ ] Adicionar autenticação TLS para o broker Mosquitto.
 
-[ ] Automatizar todo o setup com um shell script (geração do passwd, build do app e docker-compose up).
+- [ ] Automatizar todo o setup com um shell script (geração do passwd, build do app e docker-compose up).
 
-[ ] Implementar mais tópicos e lógica de comunicação bidirecional no ESP32.
+- [ ] Implementar mais tópicos e lógica de comunicação bidirecional no ESP32.
