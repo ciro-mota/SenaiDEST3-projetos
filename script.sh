@@ -1,8 +1,32 @@
 #!/usr/bin/env bash
 
+## AUTHOR:
+### 	Ciro Mota
+## DESCRIPTION:
+###			This script will provision an MQTT instance,
+### 		to communicate with the ESP32 project running under Wowki.
+## LICENSE:
+###		  GPLv3. <https://github.com/ciro-mota/SenaiDEST3-projetos/blob/main/LICENSE>
+## CHANGELOG:
+### 		Last Edition 21/08/2025. <https://github.com/ciro-mota/SenaiDEST3-projetos/commits/main/>
+
+ln -fs /usr/share/zoneinfo/America/Bahia /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
+
 mkdir -p mqtt-pingpong/{mosquitto,app}
+mkdir -p mqtt-pingpong/mosquitto/certs
 :>mqtt-pingpong/mosquitto/passwd
-chmod 777 mqtt-pingpong/mosquitto/passwd
+chmod 0700 mqtt-pingpong/mosquitto/passwd
+
+
+openssl req -new -x509 -days 3650 -extensions v3_ca \
+  -keyout mqtt-pingpong/mosquitto/certs/ca.key -out mqtt-pingpong/mosquitto/certs/ca.crt -subj "/CN=MQTT-CA" -nodes
+
+openssl genrsa -out mqtt-pingpong/mosquitto/certs/mosquitto.key 2048
+
+openssl req -new -out mqtt-pingpong/mosquitto/certs/mosquitto.csr -key mqtt-pingpong/mosquitto/certs/mosquitto.key -subj "/CN=mosquitto"
+
+openssl x509 -req -in mqtt-pingpong/mosquitto/certs/mosquitto.csr -CA mqtt-pingpong/mosquitto/certs/ca.crt -CAkey mqtt-pingpong/mosquitto/certs/ca.key \
+  -CAcreateserial -out mqtt-pingpong/mosquitto/certs/mosquitto.crt -days 3650
 
 tee mqtt-pingpong/.env << 'EOF'
 MQTT_USERNAME=wokwi
@@ -11,7 +35,9 @@ MQTT_TOPIC_PING=envia
 MQTT_TOPIC_PONG=recebe
 EOF
 
-docker container run --rm -it -v "$PWD/mqtt-pingpong/mosquitto:/work" eclipse-mosquitto:2 mosquitto_passwd -b /work/passwd wokwi SenaiLauroDEST3  
+curl -fsSL get.docker.com | bash
+
+docker container run --rm -it -v "$PWD/mqtt-pingpong/mosquitto:/work" eclipse-mosquitto:2 mosquitto_passwd -b /work/passwd wokwi SenaiLauroDEST3
 
 tee mqtt-pingpong/docker-compose.yml << 'EOF'
 services:
@@ -20,10 +46,12 @@ services:
     container_name: mosquitto
     restart: unless-stopped
     ports:
-      - "1883:1883"     # MQTT TCP
+      - "1883:1883"
+      - "8883:8883"
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - ./mosquitto/passwd:/mosquitto/config/passwd
+      - ./mosquitto/certs:/mosquitto/certs
       - mosq_data:/mosquitto/data
       - mosq_log:/mosquitto/log
   app:
@@ -32,22 +60,30 @@ services:
     restart: unless-stopped
     environment:
       - MQTT_HOST=mosquitto
-      - MQTT_PORT=1883
+      - MQTT_PORT=8883
       - MQTT_USERNAME=${MQTT_USERNAME}
       - MQTT_PASSWORD=${MQTT_PASSWORD}
       - TOPIC_PING=${MQTT_TOPIC_PING}
       - TOPIC_PONG=${MQTT_TOPIC_PONG}
       - LOG_LEVEL=INFO
+    volumes:
+      - ./mosquitto/certs:/app/certs:ro
 
 volumes:
   mosq_data:
   mosq_log:
 EOF
-  
+
 tee mqtt-pingpong/mosquitto/mosquitto.conf << 'EOF'
-listener 1883
+listener 8883
 allow_anonymous false
 password_file /mosquitto/config/passwd
+cafile /mosquitto/certs/ca.crt
+certfile /mosquitto/certs/mosquitto.crt
+keyfile /mosquitto/certs/mosquitto.key
+
+require_certificate false
+tls_version tlsv1.2
 
 listener 9001
 protocol websockets
@@ -79,10 +115,11 @@ tee mqtt-pingpong/app/main.py << 'EOF'
 import os
 import time
 import logging
+import ssl
 import paho.mqtt.client as mqtt
 
 MQTT_HOST = os.getenv("MQTT_HOST", "localhost")
-MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+MQTT_PORT = int(os.getenv("MQTT_PORT", 8883))
 MQTT_USERNAME = os.getenv("MQTT_USERNAME", "")
 MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
 TOPIC_PING = os.getenv("TOPIC_PING", "envia")
@@ -92,7 +129,18 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s %(levelname)s: %(message)s")
 log = logging.getLogger("pingpong")
 
-client = mqtt.Client(client_id="do-pingpong-app", clean_session=True, userdata=None, protocol=mqtt.MQTTv311, transport="tcp")
+client = mqtt.Client(client_id="do-pingpong-app", protocol=mqtt.MQTTv311)
+
+client.tls_set(
+    ca_certs="/app/certs/ca.crt",
+    certfile=None,
+    keyfile=None,
+    cert_reqs=ssl.CERT_REQUIRED,
+    tls_version=ssl.PROTOCOL_TLSv1_2
+)
+client.tls_insecure_set(False)
+
+client.connect(MQTT_HOST, MQTT_PORT, 60)
 
 if MQTT_USERNAME:
     client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
@@ -134,5 +182,4 @@ if __name__ == "__main__":
     run()
 EOF
 
-curl -fsSL get.docker.com | bash
 docker compose -f mqtt-pingpong/docker-compose.yml up -d

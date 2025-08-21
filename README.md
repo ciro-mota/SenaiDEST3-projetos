@@ -72,8 +72,8 @@ O Mosquitto utiliza o arquivo passwd com hash bcrypt, garantindo que o broker va
 
 - [ ] A senha do usuário MQTT é armazenada em texto plano no .env e precisará ser utilizado outro método.
 
-- [ ] Adicionar autenticação TLS para o broker Mosquitto.
+- [x] Adicionar autenticação TLS para o broker Mosquitto.
 
-- [ ] Automatizar todo o setup com um shell script (geração do passwd, build do app e docker-compose up).
+- [x] Automatizar todo o setup com um shell script (geração do passwd, build do app e docker-compose up).
 
 - [ ] Implementar mais tópicos e lógica de comunicação bidirecional no ESP32.
