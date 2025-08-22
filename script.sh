@@ -8,15 +8,40 @@
 ## LICENSE:
 ###		  GPLv3. <https://github.com/ciro-mota/SenaiDEST3-projetos/blob/main/LICENSE>
 ## CHANGELOG:
-### 		Last Edition 21/08/2025. <https://github.com/ciro-mota/SenaiDEST3-projetos/commits/main/>
+### 		Last Edition 22/08/2025. <https://github.com/ciro-mota/SenaiDEST3-projetos/commits/main/>
+
+export DEBIAN_FRONTEND=noninteractive
+
+install_docker_components() {
+
+apt update -y && apt upgrade -y
+
+curl -fsSL get.docker.com | bash 2>/dev/null
+
+}
+
+configure_timezone() {
 
 ln -fs /usr/share/zoneinfo/America/Bahia /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
+
+}
+
+create_dirs_structure() {
 
 mkdir -p mqtt-pingpong/{mosquitto,app}
 mkdir -p mqtt-pingpong/mosquitto/certs
 :>mqtt-pingpong/mosquitto/passwd
 chmod 0700 mqtt-pingpong/mosquitto/passwd
 
+}
+
+generate_password() {
+
+docker container run --rm -it -v "$PWD/mqtt-pingpong/mosquitto:/work" eclipse-mosquitto:2 mosquitto_passwd -b /work/passwd wokwi SenaiLauroDEST3
+
+}
+
+create_tls_certs() {
 
 openssl req -new -x509 -days 3650 -extensions v3_ca \
   -keyout mqtt-pingpong/mosquitto/certs/ca.key -out mqtt-pingpong/mosquitto/certs/ca.crt -subj "/CN=MQTT-CA" -nodes
@@ -27,6 +52,9 @@ openssl req -new -out mqtt-pingpong/mosquitto/certs/mosquitto.csr -key mqtt-ping
 
 openssl x509 -req -in mqtt-pingpong/mosquitto/certs/mosquitto.csr -CA mqtt-pingpong/mosquitto/certs/ca.crt -CAkey mqtt-pingpong/mosquitto/certs/ca.key \
   -CAcreateserial -out mqtt-pingpong/mosquitto/certs/mosquitto.crt -days 3650
+}
+
+create_files_structure() {
 
 tee mqtt-pingpong/.env << 'EOF'
 MQTT_USERNAME=wokwi
@@ -35,18 +63,13 @@ MQTT_TOPIC_PING=envia
 MQTT_TOPIC_PONG=recebe
 EOF
 
-curl -fsSL get.docker.com | bash
-
-docker container run --rm -it -v "$PWD/mqtt-pingpong/mosquitto:/work" eclipse-mosquitto:2 mosquitto_passwd -b /work/passwd wokwi SenaiLauroDEST3
-
 tee mqtt-pingpong/docker-compose.yml << 'EOF'
 services:
   mosquitto:
-    image: eclipse-mosquitto:2
+    image: eclipse-mosquitto:latest
     container_name: mosquitto
     restart: unless-stopped
     ports:
-      - "1883:1883"
       - "8883:8883"
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
@@ -181,5 +204,14 @@ def run():
 if __name__ == "__main__":
     run()
 EOF
+
+}
+
+configure_timezone
+install_docker_components
+create_dirs_structure
+generate_password
+create_tls_certs
+create_files_structure
 
 docker compose -f mqtt-pingpong/docker-compose.yml up -d
