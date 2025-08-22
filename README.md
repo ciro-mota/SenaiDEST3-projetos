@@ -1,21 +1,19 @@
-# SenaiDEST3-projetos
+# Senai Desenvolvimento de Sistemas - Projetos
 
 > [!WARNING]
-> Este repo é para apenas fins educacionais baseado nas minhas atividades no curso Técnico em Desenvolvimento de Sistemas e não deve ser utilizado para ambiente de produção.
+> Este repo é apenas para fins educacionais, baseado nas minhas atividades no curso Técnico em Desenvolvimento de Sistemas e não deve ser utilizado para ambiente de produção.
 
 ## Objetivo
 
-Este projeto tem como objetivo demonstrar uma comunicação MQTT "mão dupla" entre um **ESP32** simulado no [Wokwi](https://wokwi.com/) e um **broker Mosquitto** executando em um ambiente Docker em uma cloud, no exemplo a DigitalOcean.
+Este projeto tem como objetivo demonstrar uma comunicação MQTT "mão dupla" entre um **ESP32** simulado na plataforma [Wokwi](https://wokwi.com/) e um **broker Mosquitto** executando em um ambiente Docker em uma instância na nuvem, no exemplo a [DigitalOcean](https://m.do.co/c/59a80b08da11).
 
-O comportamento principal é:
+Esse fluxo simula o funcionamento de um comando `ping` tradicional permitindo testar comunicação bidirecional via `MQTT` em ambiente seguro e *containerizado*.
+
+O comportamento é:
 
 1. O ESP32 envia uma mensagem `"ping"` para o broker.
 2. O broker recebe a mensagem e responde com `"pong"`.
-3. O ESP32 reconhece a resposta e aciona um display LCD `I²C` (simulado via Wokwi) mostrando uma mensagem de confirmação.
-
-Esse fluxo simula o funcionamento de um comando `ping` tradicional permitindo testar comunicação bidirecional via MQTT em ambiente seguro e *containerizado*.
-
----
+3. O ESP32 reconhece a resposta e aciona um display `LCD I²C` (simulado via Wokwi) mostrando uma mensagem de confirmação.
 
 ## Estrutura do Projeto
 
@@ -27,24 +25,21 @@ mqtt-pingpong/
 │ ├─ mosquitto.conf # Configuração do broker Mosquitto
 │ └─ passwd # Arquivo gerado com hash bcrypt do usuário MQTT
 └─ app/
-├─ Dockerfile # Container Python para testes MQTT
+├─ Dockerfile # Container Python para o MQTT
 ├─ requirements.txt # Dependências Python
 └─ main.py # Script principal que envia e recebe mensagens MQTT
 ```
 
----
-
 ## Pré-requisitos
 
-- Docker e Docker Compose instalados
-- Python3 no container `app`
-- Wokwi (simulação do ESP32 e LCD I²C)
+- Instância na nuvem.
+- Docker e Docker Compose.
+- Python3 (no container `app`).
+- [Wokwi](https://wokwi.com/) (simulação do ESP32 e LCD I²C).
 
----
+## Configuração
 
-## Setup
-
-### Configuração do ESP32 no Wokwi:
+### ESP32 no Wokwi:
 
     SDA → GPIO 21
     SCL → GPIO 22
@@ -62,18 +57,21 @@ Você pode alterar a cor de fundo e do texto do LCD diretamente no `diagram.json
 ### Execução
 
 - Execute o arquivo `script.sh` para provisionar o ambiente.
-- Salve uma cópia do código no [Wokwi](https://wokwi.com/projects/439649923166542849), modifique os parâmetros obrigatórios e construa o projeto.
+- Salve uma cópia do código no [Wokwi](https://wokwi.com/projects/439649923166542849).
+- Modifique os parâmetros obrigatórios no script e no projeto no Wokwi e construa-o.
 
 ## Segurança
 
-O Mosquitto utiliza o arquivo passwd com hash bcrypt, garantindo que o broker valide a senha sem expô-la diretamente.
+O Mosquitto utiliza o arquivo `passwd` com hash `bcrypt`, garantindo que o broker valide a senha sem expô-la diretamente.
+
+Criptografada via TLS protegendo usuário, senha e mensagens MQTT.
 
 ## Próximos Passos
 
-- [ ] A senha do usuário MQTT é armazenada em texto plano no .env e precisará ser utilizado outro método.
+- [ ] A senha do usuário MQTT é armazenada em texto plano no arquivo `.env` e precisará ser utilizado outro método para evitar exposição direta.
+
+- [ ] Implementar mais tópicos e lógica de comunicação bidirecional no ESP32.
 
 - [x] Adicionar autenticação TLS para o broker Mosquitto.
 
 - [x] Automatizar todo o setup com um shell script (geração do passwd, build do app e docker-compose up).
-
-- [ ] Implementar mais tópicos e lógica de comunicação bidirecional no ESP32.
