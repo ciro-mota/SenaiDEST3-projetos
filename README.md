@@ -63,7 +63,7 @@ git clone https://github.com/ciro-mota/SenaiDEST3-projetos && cd "$(basename "$_
 ```
 - Execute o arquivo `script.sh` para provisionar o ambiente.
 - Salve uma cópia do código no [Wokwi](https://wokwi.com/projects/439649923166542849).
-- Execute o comando abaixo para construir a imagem. Mude os argumentos de `usuário` e `senha` para os seus.
+- Execute o comando abaixo para construir a imagem. Mude os argumentos de `MQTT_USER` e `MQTT_PASS` para os seus valores de usuário e senha.
 
 ```bash
 docker buildx build --build-arg MQTT_USER=ciro \
