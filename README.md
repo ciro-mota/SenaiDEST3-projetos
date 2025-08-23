@@ -56,9 +56,28 @@ Você pode alterar a cor de fundo e do texto do LCD diretamente no `diagram.json
 
 ### Execução
 
+- Clone o repo:
+
+```bash
+git clone https://github.com/ciro-mota/SenaiDEST3-projetos && cd "$(basename "$_" .git)
+```
 - Execute o arquivo `script.sh` para provisionar o ambiente.
 - Salve uma cópia do código no [Wokwi](https://wokwi.com/projects/439649923166542849).
-- Modifique os parâmetros obrigatórios no script e no projeto no Wokwi e construa-o.
+- Execute o comando abaixo para construir a imagem. Mude os argumentos de `usuário` e `senha` para os seus.
+
+```bash
+docker buildx build --build-arg MQTT_USER=ciro \
+--build-arg MQTT_PASS=supersegredo \
+ -t pymosquitto files
+```
+
+- Execute o comando abaixo para rodar a aplicação:
+
+```bash
+docker container run -itd -p 8883:8883 pymosquitto
+```
+
+- Modifique os parâmetros obrigatórios no projeto no Wokwi e construa-o para o funcionamento.
 
 ## Segurança
 
@@ -68,7 +87,7 @@ Criptografada via TLS protegendo usuário, senha e mensagens MQTT.
 
 ## Próximos Passos
 
-- [ ] A senha do usuário MQTT é armazenada em texto plano no arquivo `.env` e precisará ser utilizado outro método para evitar exposição direta.
+- [x] A senha do usuário MQTT é armazenada em texto plano no arquivo `.env` e precisará ser utilizado outro método para evitar exposição direta.
 
 - [ ] Implementar mais tópicos e lógica de comunicação bidirecional no ESP32.
 
