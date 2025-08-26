@@ -1,0 +1,38 @@
+# hadolint ignore=DL3007
+FROM eclipse-mosquitto:latest
+
+LABEL org.opencontainers.image.title="mosquito"
+LABEL org.opencontainers.image.description="Communicate with the ESP32 project running under Wowki."
+LABEL org.opencontainers.image.authors="Ciro Mota <github.com/ciro-mota> (@ciro-mota)"
+LABEL org.opencontainers.image.url="https://github.com/ciro-mota/SenaiDEST3-projetos"
+LABEL org.opencontainers.image.documentation="https://github.com/ciro-mota/SenaiDEST3-projetos#README"
+LABEL org.opencontainers.image.source="https://github.com/ciro-mota/SenaiDEST3-projetos"
+
+ARG MQTT_USER=yourusername
+ARG MQTT_PASS=changeme
+ENV MQTT_USER=$MQTT_USER
+ENV MQTT_PASS=$MQTT_PASS
+
+RUN apk add openssl=3.5.2-r0 --no-cache && \
+    mkdir -p /mosquitto/certs && \
+    openssl genrsa -out /mosquitto/certs/ca.key 2048 && \
+    openssl req -x509 -new -nodes -key /mosquitto/certs/ca.key -sha256 -days 365 \
+        -subj "/C=BR/ST=SP/O=DemoCA/CN=DemoCA" \
+        -out /mosquitto/certs/ca.crt && \
+    openssl genrsa -out /mosquitto/certs/mosquitto.key 2048 && \
+    openssl req -new -key /mosquitto/certs/mosquitto.key \
+        -subj "/C=BR/ST=SP/O=DemoServer/CN=localhost" \
+        -out /mosquitto/certs/mosquitto.csr && \
+    openssl x509 -req -in /mosquitto/certs/mosquitto.csr -CA /mosquitto/certs/ca.crt \
+        -CAkey /mosquitto/certs/ca.key -CAcreateserial \
+        -out /mosquitto/certs/mosquitto.crt -days 365 -sha256 && \
+    mkdir -p /mosquitto/config && \
+    mosquitto_passwd -b -c /mosquitto/config/passwd $MQTT_USER $MQTT_PASS && \
+    chown -R mosquitto:mosquitto /mosquitto && \
+    chmod 0700 /mosquitto/config/passwd
+
+EXPOSE 8883
+
+USER mosquitto
+
+CMD ["/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
