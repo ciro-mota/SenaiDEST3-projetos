@@ -4,7 +4,7 @@ import logging
 import ssl
 import paho.mqtt.client as mqtt
 
-MQTT_HOST = os.getenv("MQTT_HOST", "localhost")
+MQTT_HOST = os.getenv("MQTT_HOST", "mosquitto-broker")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 8883))
 MQTT_USER = os.getenv("MQTT_USER", "")
 MQTT_PASS = os.getenv("MQTT_PASS", "")
@@ -32,8 +32,6 @@ client.tls_insecure_set(False)
 
 if MQTT_USER:
     client.username_pw_set(MQTT_USER, MQTT_PASS)
-
-client.connect(MQTT_HOST, MQTT_PORT, 60)
 
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == mqtt.CONNACK_ACCEPTED:
