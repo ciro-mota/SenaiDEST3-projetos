@@ -62,19 +62,12 @@ Você pode alterar a cor de fundo e do texto do LCD diretamente no `diagram.json
 git clone https://github.com/ciro-mota/SenaiDEST3-projetos && cd "$(basename "$_" .git)
 ```
 - Execute o arquivo `script.sh` para provisionar o ambiente.
+- Edite os argumentos de `MQTT_USER` e `MQTT_PASS` do arquivo `docker-compose.yml` para os seus valores de usuário e senha.
 - Salve uma cópia do código no [Wokwi](https://wokwi.com/projects/439649923166542849).
-- Execute o comando abaixo para construir a imagem. Mude os argumentos de `MQTT_USER` e `MQTT_PASS` para os seus valores de usuário e senha.
+- Execute o comando abaixo para provisionar os containers.
 
 ```bash
-docker buildx build --build-arg MQTT_USER=ciro \
---build-arg MQTT_PASS=supersegredo \
- -t pymosquitto files
-```
-
-- Execute o comando abaixo para rodar a aplicação:
-
-```bash
-docker container run -itd -p 8883:8883 pymosquitto
+docker compose -f files/docker-compose.yml up --build -d
 ```
 
 - Modifique os parâmetros obrigatórios no projeto no Wokwi e construa-o para o funcionamento.
