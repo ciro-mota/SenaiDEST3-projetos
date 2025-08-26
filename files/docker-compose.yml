@@ -1,0 +1,33 @@
+services:
+  mosquitto-broker:
+    build:
+      context: .
+      dockerfile: Dockerfile.broker
+      args:
+        MQTT_USER: ciro # Mude para o usuário desejado.
+        MQTT_PASS: supersegredo # Mude para a senha desejada.
+    container_name: mosquitto-broker
+    ports:
+      - "8883:8883"
+    restart: unless-stopped
+    volumes:
+      - mosquitto-certs:/mosquitto/certs
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    environment:
+      MQTT_HOST: mosquitto-broker
+      MQTT_PORT: 8883
+      MQTT_USER: ciro # Mude para o usuário desejado, igual ao anterior.
+      MQTT_PASS: supersegredo # Mude para a senha desejada, igual a anterior.
+    container_name: mqtt-app
+    depends_on:
+      - mosquitto-broker
+    restart: unless-stopped
+    volumes:
+      - mosquitto-certs:/mosquitto/certs
+
+volumes:
+  mosquitto-certs:
