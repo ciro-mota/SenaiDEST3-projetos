@@ -76,16 +76,9 @@ docker compose -f files/docker-compose.yml up --build -d
 
 ## Segurança
 
-O Mosquitto utiliza o arquivo `passwd` com hash `bcrypt`, garantindo que o broker valide a senha sem expô-la diretamente.
-
-Criptografada via TLS protegendo usuário, senha e mensagens MQTT.
+- O Mosquitto utiliza a criptografada via `TLS` protegendo usuário, senha e mensagens MQTT.
+- Usuário e senha são modificados em tempo de build.
 
 ## Próximos Passos
 
-- [x] A senha do usuário MQTT é armazenada em texto plano no arquivo `.env` e precisará ser utilizado outro método para evitar exposição direta.
-
 - [ ] Implementar mais tópicos e lógica de comunicação bidirecional no ESP32.
-
-- [x] Adicionar autenticação TLS para o broker Mosquitto.
-
-- [x] Automatizar todo o setup com um shell script (geração do passwd, build do app e docker-compose up).
