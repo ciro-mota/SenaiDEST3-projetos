@@ -39,14 +39,14 @@ mqtt-pingpong/
 
 ## Configuração
 
-### ESP32 no Wokwi:
+### ESP32 LCD I2C no Wokwi:
 
     SDA → GPIO 21
     SCL → GPIO 22
     VCC → 5V
     GND → GND
 
-### Personalização do LCD no Wokwi
+### Personalização do LCD no Wokwi:
 
 Você pode alterar a cor de fundo e do texto do LCD diretamente no `diagram.json`:
 
@@ -54,15 +54,15 @@ Você pode alterar a cor de fundo e do texto do LCD diretamente no `diagram.json
 "attrs": { "pins": "i2c", "background": "blue", "color": "white" }
 ```
 
-### Execução
+## Execução
 
+- Certifique-se de o sistema está atualizado e possui o `git` instalado.
 - Clone o repo:
 
 ```bash
-git clone https://github.com/ciro-mota/SenaiDEST3-projetos && cd "$(basename "$_" .git)
+git clone https://github.com/ciro-mota/SenaiDEST3-projetos && cd "$(basename "$_" .git)"
 ```
-- Execute o arquivo `script.sh` para provisionar o ambiente.
-- Edite os argumentos de `MQTT_USER` e `MQTT_PASS` do arquivo `docker-compose.yml` para os seus valores de usuário e senha.
+- Edite os argumentos de `MQTT_USER` e `MQTT_PASS` do arquivo `files/docker-compose.yml` para os seus valores de usuário e senha.
 - Salve uma cópia do código no [Wokwi](https://wokwi.com/projects/439649923166542849).
 - Execute o comando abaixo para provisionar os containers.
 
@@ -70,7 +70,9 @@ git clone https://github.com/ciro-mota/SenaiDEST3-projetos && cd "$(basename "$_
 docker compose -f files/docker-compose.yml up --build -d
 ```
 
-- Modifique os parâmetros obrigatórios no projeto no Wokwi e construa-o para o funcionamento.
+- Ou execute o arquivo `script.sh` para provisionar o ambiente de forma automática.
+
+- Modifique os parâmetros obrigatórios no projeto no Wokwi em `secrets.h` e construa-o para o funcionamento.
 
 ## Segurança
 
