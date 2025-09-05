@@ -23,28 +23,28 @@ install_components() {
 
 apt update -y && apt upgrade -y
 
-apt install git fail2ban -y
+apt install git -y
 
 curl -fsSL get.docker.com | bash 2>/dev/null
 
 }
 
-fail2ban_configure() {
+# fail2ban_configure() {
 
-sudo tee /etc/fail2ban/jail.d/sshd.local << 'EOF'
-[sshd]
-enabled   = true
-port      = ssh
-filter    = sshd
-logpath   = /var/log/auth.log
-backend   = systemd
-maxretry  = 2
-findtime  = 600
-bantime   = 86400
-ignoreip  = 127.0.0.1 192.168.0.10
-EOF
+# sudo tee /etc/fail2ban/jail.d/sshd.local << 'EOF'
+# [sshd]
+# enabled   = true
+# port      = ssh
+# filter    = sshd
+# logpath   = /var/log/auth.log
+# backend   = systemd
+# maxretry  = 2
+# findtime  = 600
+# bantime   = 86400
+# ignoreip  = 127.0.0.1 192.168.0.10
+# EOF
 
-}
+# }
 
 deploy_ambient() {
 
@@ -57,5 +57,5 @@ docker compose -f files/docker-compose.yml up --build -d
 
 configure_timezone
 install_components
-fail2ban_configure
+# fail2ban_configure
 deploy_ambient
