@@ -13,6 +13,8 @@ ARG MQTT_PASS=changeme
 ENV MQTT_USER=$MQTT_USER
 ENV MQTT_PASS=$MQTT_PASS
 
+COPY mosquitto.conf /mosquitto/config/mosquitto.conf
+
 RUN apk add openssl=3.5.2-r0 --no-cache && \
     mkdir -p /mosquitto/certs && \
     openssl genrsa -out /mosquitto/certs/ca.key 2048 && \
